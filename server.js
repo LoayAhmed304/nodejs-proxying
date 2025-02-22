@@ -1,5 +1,8 @@
 const https = require("https");
 const http = require("http");
+const httpProxy = require("http-proxy");
+
+const proxy = httpProxy.createProxyServer();
 
 const fs  = require("fs");
 
@@ -9,8 +12,11 @@ const serverOptions = {
 }
 
 const httpsServer = https.createServer(serverOptions, (req, res) =>{
-    res.writeHead(200, {"Content-Type": "text/plain"});
-    res.end("Welcome to my localhost... EXCEPT ITS HTTPS!!!!!");
+    // proxy to our db backend server (error with db hosting)
+    proxy.web(req, res, {target:"http://localhost:3000"}, (err, req, res)=>{
+        res.writeHead(502, {"Content-Type": "plain/text"});
+        res.end("Bade Gateway: error with the proxy");
+    }); 
 });
 
 const httpServer = http.createServer((req, res)=>{
