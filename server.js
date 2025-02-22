@@ -34,6 +34,10 @@ const httpsServer = https.createServer(serverOptions, (req, res) =>{
     }
 });
 
+proxy.on("proxyReq", (proxyReq, req, res)=>{
+    proxyReq.setHeader("My-Header", "A custom header value made by the proxy");
+})
+
 const httpServer = http.createServer((req, res)=>{
     res.writeHead(301, {"Location":`https://localhost:8080`});
     res.end();
