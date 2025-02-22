@@ -43,5 +43,10 @@ const httpServer = http.createServer((req, res)=>{
     res.end();
 })
 
+proxy.on("error", (err, req, res)=>{
+    res.writeHead(500, {"Content-Type": "text/plain"});
+    res.end("Error with the proxy");
+})
+
 httpsServer.listen(8080, ()=>console.log("Hello world, listening to server Loay"));
 httpServer.listen(80, ()=>console.log("HTTP running on port 80"));
