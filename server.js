@@ -12,11 +12,26 @@ const serverOptions = {
 }
 
 const httpsServer = https.createServer(serverOptions, (req, res) =>{
-    // proxy to our db backend server (error with db hosting)
-    proxy.web(req, res, {target:"http://localhost:3000"}, (err, req, res)=>{
-        res.writeHead(502, {"Content-Type": "plain/text"});
-        res.end("Bade Gateway: error with the proxy");
-    }); 
+    if(req.url.startsWith("/azi")){
+        proxy.web(req, res, {target:"http://localhost:5000"}, (err)=>{
+            res.writeHead(502, {"Content-Type": "text/plain"});
+            res.end("Bad Gateway: Error with the proxy");
+        });
+    }else if(req.url.startsWith("/photos")){
+        proxy.web(req, res, {target: "http://localhost:4000"}, (err)=>{
+            res.writeHead(502, {"Content-Type": "text/plain"});
+            res.end("Bad Gateway: Error with the proxy");
+        });
+    }else if(req.url.startsWith("/api")){
+        // proxy to our db backend server (error with db hosting)
+        proxy.web(req, res, {target:"http://localhost:3000"}, (err)=>{
+            res.writeHead(502, {"Content-Type": "text/plain"});
+            res.end("Bad Gateway: Error with the proxy");
+        });
+    }else{
+        res.writeHead(502, {"Content-Type": "text/plain"});
+        res.end("Bad Gateway: Error with the proxy, undefined server requested");
+    }
 });
 
 const httpServer = http.createServer((req, res)=>{
