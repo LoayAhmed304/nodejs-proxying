@@ -6,7 +6,7 @@ A lightweight and secure **reverse proxy server** built with **Node.js**, handli
 
 - **This is not a full/production-ready proxy web server!** – This repository serves as a learning project where I experimented with various security measures, proxying techniques and optimiazations. I'd love to hear your thoughts!
 
-- **Feel free to discuss or share any feedback! I do love chatting about such topics🤩🤩**
+- **Check my Learning Journey.md file and feel free to discuss with me about anything, I'm bored...**
 
 ## Features
 
