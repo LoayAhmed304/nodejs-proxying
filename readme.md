@@ -1,4 +1,4 @@
-# 🔒 Secure Reverse Proxy Server
+# Reverse Proxy Server
 
 A lightweight and secure **reverse proxy server** built with **Node.js**, handling SSL termination, request forwarding, caching, and security headers.
 
