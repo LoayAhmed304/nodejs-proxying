@@ -2,51 +2,38 @@ const https = require("https");
 const http = require("http");
 const httpProxy = require("http-proxy");
 
+const sslConfig = require("./config/sslConfig");
+const proxyConfig = require("./config/proxyConfig");
+const errorHandler = require("./utils/errorHandler");
+
 const proxy = httpProxy.createProxyServer();
 
-const fs  = require("fs");
+const httpsServer = https.createServer(sslConfig, (req, res) => {
+  const route = proxyConfig.find((route) => req.url.startsWith(route.path));
 
-const serverOptions = {
-    key: fs.readFileSync('private.key'),
-    cert: fs.readFileSync("server.crt")
-}
-
-const httpsServer = https.createServer(serverOptions, (req, res) =>{
-    if(req.url.startsWith("/azi")){
-        proxy.web(req, res, {target:"http://localhost:5000"}, (err)=>{
-            res.writeHead(502, {"Content-Type": "text/plain"});
-            res.end("Bad Gateway: Error with the proxy");
-        });
-    }else if(req.url.startsWith("/photos")){
-        proxy.web(req, res, {target: "http://localhost:4000"}, (err)=>{
-            res.writeHead(502, {"Content-Type": "text/plain"});
-            res.end("Bad Gateway: Error with the proxy");
-        });
-    }else if(req.url.startsWith("/api")){
-        // proxy to our db backend server (error with db hosting)
-        proxy.web(req, res, {target:"http://localhost:3000"}, (err)=>{
-            res.writeHead(502, {"Content-Type": "text/plain"});
-            res.end("Bad Gateway: Error with the proxy");
-        });
-    }else{
-        res.writeHead(502, {"Content-Type": "text/plain"});
-        res.end("Bad Gateway: Error with the proxy, undefined server requested");
-    }
+  if (!route) {
+    res.writeHead(502, { "Content-Type": "text/plain" });
+    res.end("Bad Gateway: Undefined server requested");
+    return;
+  }
+  proxy.web(req, res, { target: route.target }, (err) =>
+    errorHandler(err, req, res)
+  );
 });
 
-proxy.on("proxyReq", (proxyReq, req, res)=>{
-    proxyReq.setHeader("My-Header", "A custom header value made by the proxy");
-})
+// Add custom header to all proxied requests
+proxy.on("proxyReq", (proxyReq, req, res) => {
+  proxyReq.setHeader("My-Header", "A custom header value made by the proxy");
+});
 
-const httpServer = http.createServer((req, res)=>{
-    res.writeHead(301, {"Location":`https://localhost:8080`});
-    res.end();
-})
+proxy.on("error", errorHandler);
 
-proxy.on("error", (err, req, res)=>{
-    res.writeHead(500, {"Content-Type": "text/plain"});
-    res.end("Error with the proxy");
-})
+const httpServer = http.createServer((req, res) => {
+  res.writeHead(301, { Location: `https://localhost:443` });
+  res.end();
+});
 
-httpsServer.listen(8080, ()=>console.log("Hello world, listening to server Loay"));
-httpServer.listen(80, ()=>console.log("HTTP running on port 80"));
+httpsServer.listen(443, () =>
+  console.log("Hello world, listening to server Loay")
+);
+httpServer.listen(80, () => console.log("HTTP running on port 80"));
